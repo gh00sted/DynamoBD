@@ -1,2 +1,2 @@
-boto3-env/
+.venv/
 .env
