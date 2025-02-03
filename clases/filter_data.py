@@ -41,7 +41,7 @@ class FilterRecords:
         try:
             response = self.table.scan(FilterExpression=filter_expression)
             items = response.get("Items", [])
-            # Manejo de paginación, en caso de que existan muchos registros.
+            # Manejo de paginacion, en caso de que existan muchos registros.
             while "LastEvaluatedKey" in response:
                 response = self.table.scan(
                     FilterExpression=filter_expression,

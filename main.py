@@ -4,6 +4,18 @@ import boto3
 from botocore.exceptions import ClientError
 load_dotenv()
 
+
+#Importamos todas las clases para cada ejercicio
+from clases.data_tables import DataTables #1
+from clases.write_data import InsertData #2
+from clases.get_data import DataRecords #3
+from clases.delete_data import DeleteRecords #5
+from clases.scan_data import ScanRecords #6
+from clases.filter_data import FilterRecords #7 y 9
+from clases.conditional_delete_data import ConditionalDeleteRecords #8
+from clases.partiql_data import PartiQLStatements #10
+from clases.backup_data import BackupRecords #11
+
 # Crear cliente de DynamoDB
 dynamodb = boto3.resource(
     'dynamodb',
@@ -13,29 +25,33 @@ dynamodb = boto3.resource(
     region_name=os.getenv("REGION_NAME")
 )
 
-# 1-Crear al menos 3 tablas con dos atributos cada una ----------------------------------------------------------------------------
+#Limpiamos la BBDD previamente
+from clases.clear_db import DynamoDBManager
 
-# Importamos la clase para crear tablas con 2 atributos
-from clases.data_tables import DataTables
+tablas = ["TablaClientes", "TablaProductos", "TablaEmpleados"]
+manager = DynamoDBManager(dynamodb)
+manager.eliminar_tablas(tablas)
+
+print("")
+# 1-Crear al menos 3 tablas con dos atributos cada una ----------------------------------------------------------------------------
+print("EJERCICIO 1 ----------------------------------------------------------------")
 
 # Instanciamos 
 data_tables = DataTables(dynamodb)
 
 # Creamos las 3 tablas con parametros a gusto
-#table1 = data_tables.create_table('TablaClientes', 'client_id', 'client_name')
-#table2 = data_tables.create_table('TablaProductos', 'product_id', 'product_name')
-#table3 = data_tables.create_table('TablaEmpleados', 'employee_id', 'employee_name')
+table1 = data_tables.create_table('TablaClientes', 'client_id', 'client_name')
+table2 = data_tables.create_table('TablaProductos', 'product_id', 'product_name')
+table3 = data_tables.create_table('TablaEmpleados', 'employee_id', 'employee_name')
 
+print("")
 # 2-Crear tres registros encada tabla ----------------------------------------------------------------------------
-
-#Importamos la clase para crear registros
-from clases.write_data import InsertData
+print("EJERCICIO 2 ----------------------------------------------------------------")
 
 #Instanciamos
 insert_data = InsertData(dynamodb)
 
 #Generamos los datos que queremos introducir
-# Datos TablaClientes
 clientes = [
     {"client_id": 1, "client_name": "Juan Pérez", "client_status": "Activo"},
     {"client_id": 2, "client_name": "Ana López", "client_status": "Inactivo"},
@@ -57,10 +73,9 @@ insert_data.insert_data('TablaClientes', clientes)
 insert_data.insert_data('TablaProductos', productos)
 insert_data.insert_data('TablaEmpleados', empleados)
 
+print("")
 # 3-Obtener un registro de cada tabla  ----------------------------------------------------------------------------
-
-#Importamos la clase para obtener registros
-from clases.get_data import DataRecords 
+print("EJERCICIO 3 ----------------------------------------------------------------")
 
 #Instanciamos
 data_records = DataRecords(dynamodb)
@@ -80,33 +95,31 @@ print("Cliente:", cliente)
 print("Producto:", producto)
 print("Empleado:", empleado)
 
+print("")
 # 5 - Eliminar un registro de cada tabla   ----------------------------------------------------------------------------
+print("EJERCICIO 5 ----------------------------------------------------------------")
 
-#Importamos la clase
-from clases.delete_data import DeleteRecords
-
-#La instanciamos
+#Instanciamos
 delete_records = DeleteRecords(dynamodb)
 
 #Realizamos las eliminaciones
-#delete_records.set_table('TablaClientes')
-#response_cliente = delete_records.delete_record({"client_id": 1, "client_name": "Juan Pérez"})
+delete_records.set_table('TablaClientes')
+response_cliente = delete_records.delete_record({"client_id": 1, "client_name": "Juan Pérez"})
 
-#delete_records.set_table('TablaProductos')
-#response_producto = delete_records.delete_record({"product_id": 101, "product_name": "Laptop HP"})
+delete_records.set_table('TablaProductos')
+response_producto = delete_records.delete_record({"product_id": 101, "product_name": "Laptop HP"})
 
-#delete_records.set_table('TablaEmpleados')
-#response_empleado = delete_records.delete_record({"employee_id": 201, "employee_name": "María Fernández"})
+delete_records.set_table('TablaEmpleados')
+response_empleado = delete_records.delete_record({"employee_id": 201, "employee_name": "María Fernández"})
 
-#print("\nRespuestas de eliminación:")
-#print("TablaClientes:", response_cliente)
-#print("TablaProductos:", response_producto)
-#print("TablaEmpleados:", response_empleado)
+print("\nRespuestas de eliminación:")
+print("TablaClientes:", response_cliente)
+print("TablaProductos:", response_producto)
+print("TablaEmpleados:", response_empleado)
 
+print("")
 # 6 - Obtener todos los registros de cada tabla   ----------------------------------------------------------------------------
-
-#Importamos la clase
-from clases.scan_data import ScanRecords
+print("EJERCICIO 6 ----------------------------------------------------------------")
 
 #La instanciamos
 scan_records = ScanRecords(dynamodb)
@@ -132,13 +145,13 @@ for producto in todos_productos:
 print("\nTodos los registros de TablaEmpleados:")
 for empleado in todos_empleados:
     print(empleado)
-    
+
+print("")
 # 7 - Obtener una conjunto de registros de un filtrado de cada tabla    ----------------------------------------------------------------------------
+print("EJERCICIO 7 ----------------------------------------------------------------")
 
-#Importamos la clase y Attr de boto3 para las condiciones
-from clases.filter_data import FilterRecords
+#Importamos Attr de boto3 para las condiciones
 from boto3.dynamodb.conditions import Attr
-
 
 #La instanciamos
 filter_records = FilterRecords(dynamodb)
@@ -166,14 +179,12 @@ for item in filtered_productos:
 print("\nRegistros filtrados en TablaEmpleados:")
 for item in filtered_empleados:
     print(item)
-    
-# 8 - Realizar una eliminación condicional de cada tabla    ----------------------------------------------------------------------------
+
 print("")
+# 8 - Realizar una eliminación condicional de cada tabla    ----------------------------------------------------------------------------
+print("EJERCICIO 8 ----------------------------------------------------------------")
 
-#Importamos la clase
-from clases.conditional_delete_data import ConditionalDeleteRecords
-
-#La instanciamos
+#Instanciamos
 conditional_delete = ConditionalDeleteRecords(dynamodb)
 
 # Realizamos una eliminación condicional en cada tabla
@@ -212,5 +223,92 @@ try:
     print("Registro eliminado en TablaEmpleados (department es Marketing):", response_empleado)
 except Exception as e:
     print("No se pudo eliminar condicionalmente el registro en TablaEmpleados:", e)
-    
+
+print("")
 # 9 - Obtener un conjunto de datos a través de varios filtros aplicado en cada tabla    ----------------------------------------------------------------------------
+print("EJERCICIO 9 ----------------------------------------------------------------")
+
+# Para este ejercicio, usaremos la misma clase de filtrado anteriormente usada
+
+# Filtrar en TablaClientes: clientes con client_status == "Activo" y client_id > 1
+filter_records.set_table('TablaClientes')
+clientes_filtrados = filter_records.filter_records(
+    Attr("client_status").eq("Activo") & Attr("client_id").gt(1)
+)
+
+# Filtrar en TablaProductos: productos con price > 100 o cuyo product_name contenga "Laptop"
+filter_records.set_table('TablaProductos')
+productos_filtrados = filter_records.filter_records(
+    Attr("price").gt(100) | Attr("product_name").contains("Laptop")
+)
+
+# Filtrar en TablaEmpleados: empleados con department == "TI" y employee_id < 300
+filter_records.set_table('TablaEmpleados')
+empleados_filtrados = filter_records.filter_records(
+    Attr("department").eq("TI") & Attr("employee_id").lt(300)
+)
+
+print("\nClientes filtrados (Activo y client_id > 1):")
+for cliente in clientes_filtrados:
+    print(cliente)
+
+print("\nProductos filtrados (price > 100 o product_name contiene 'Laptop'):")
+for producto in productos_filtrados:
+    print(producto)
+
+print("\nEmpleados filtrados (department == 'TI' y employee_id < 300):")
+for empleado in empleados_filtrados:
+    print(empleado)
+
+print("")
+# 10 - Utilizar PartiQL statement en cada tabla     ----------------------------------------------------------------------------
+print("EJERCICIO 10 ----------------------------------------------------------------")
+
+#Obtenemos el cliente low-level
+ddb_client = dynamodb.meta.client
+
+#Instanciamos la clase
+partiql = PartiQLStatements(ddb_client)
+
+# Obtendremos todos los registros de las tablas con una consulta PartiQL
+# Es importante encerrar el nombre de la tabla entre comillas dobles.
+
+# TablaClientes
+statement_clientes = 'SELECT * FROM "TablaClientes"'
+items_clientes = partiql.execute_partiql(statement_clientes)
+print("\nResultados de PartiQL en TablaClientes:")
+for item in items_clientes:
+    print(item)
+
+# TablaProductos
+statement_productos = 'SELECT * FROM "TablaProductos"'
+items_productos = partiql.execute_partiql(statement_productos)
+print("\nResultados de PartiQL en TablaProductos:")
+for item in items_productos:
+    print(item)
+
+# TablaEmpleados
+statement_empleados = 'SELECT * FROM "TablaEmpleados"'
+items_empleados = partiql.execute_partiql(statement_empleados)
+print("\nResultados de PartiQL en TablaEmpleados:")
+for item in items_empleados:
+    print(item)
+
+print("")
+# 11 - Crear un backup de todas las tablas 
+print("EJERCICIO 11 ----------------------------------------------------------------")
+
+# Instanciamos la clase 
+backup_records = BackupRecords(ddb_client)
+
+# Lista de tablas para el backup
+table_names = ["TablaClientes", "TablaProductos", "TablaEmpleados"]
+
+print("Creando backups de todas las tablas...\n")
+for table in table_names:
+    try:
+        backup_details = backup_records.create_backup(table)
+        print(f"Backup creado para {table}:")
+        print(backup_details)
+    except Exception as e:
+        print(f"Error al crear backup para {table}: {e}")
